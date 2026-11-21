@@ -60,7 +60,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "No valid user message found." });
     }
 
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    const model = "gemini-3.8-flash";
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const apiRes = await fetch(endpoint, {
