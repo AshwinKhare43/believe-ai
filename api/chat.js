@@ -13,7 +13,48 @@ const VIBE_PROMPTS = {
   serious: "Stay 100% dead-serious, focused, concise, and tactical. No jokes."
 };
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let cachedModels = null;
+
+function scoreModel(id) {
+  let s = 0;
+  if (/flash-lite/i.test(id)) s += 55;
+  else if (/flash/i.test(id)) s += 45;
+  else if (/gemma-3/i.test(id)) s += 38;
+  else if (/pro/i.test(id)) s += 25;
+  else if (/gemma/i.test(id)) s += 20;
+
+  if (/gemini-3/i.test(id)) s += 15;
+  if (/exp|thinking/i.test(id)) s -= 10;
+  if (/preview/i.test(id)) s -= 3;
+  return s;
+}
+
+async function getAvailableModels(apiKey) {
+  if (cachedModels && cachedModels.length > 0) return cachedModels;
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=100`
+    );
+    const data = await res.json();
+    const blocked = /embedding|imagen|veo|tts|audio|image|robotics|computer-use|deep-research|aqa|vision|nano|learnlm|^gemini-1\.|^gemini-2\.0|^gemini-2\.5-flash$/i;
+
+    const list = (data.models || [])
+      .filter(
+        (m) =>
+          Array.isArray(m.supportedGenerationMethods) &&
+          m.supportedGenerationMethods.includes("generateContent")
+      )
+      .map((m) => m.name.replace(/^models\//, ""))
+      .filter((id) => !blocked.test(id))
+      .sort((a, b) => scoreModel(b) - scoreModel(a));
+
+    if (list.length > 0) {
+      cachedModels = list.slice(0, 5);
+      return cachedModels;
+    }
+  } catch (_) {}
+  return ["gemini-3.8-flash", "gemma-3-27b-it", "gemma-3-12b-it"];
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -55,34 +96,36 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "No valid user message found." });
     }
 
-    const payload = JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents,
-      generationConfig: {
-        temperature: vibe === "serious" || mode === "study" ? 0.4 : 0.85,
-        maxOutputTokens: 1024
-      }
-    });
-
-    const attempts = [
-      { model: "gemini-3.8-flash", delay: 0 },
-      { model: "gemini-3.8-flash-lite", delay: 0 },
-      { model: "gemini-2.5-flash-lite", delay: 0 },
-      { model: "gemini-3.8-flash", delay: 1200 },
-      { model: "gemini-3.8-flash-lite", delay: 1200 }
-    ];
-
+    const models = await getAvailableModels(apiKey);
     let lastStatus = 503;
-    let lastError = "Server busy hai, 10 second baad try kar.";
+    let lastError = "Sabhi models abhi busy hain, thodi der baad try kar.";
 
-    for (const step of attempts) {
-      if (step.delay) await sleep(step.delay);
+    for (const modelId of models) {
+      const isGemma = /^gemma/i.test(modelId);
+      const reqContents = isGemma
+        ? contents.map((c, i) =>
+            i === 0
+              ? { role: c.role, parts: [{ text: `${systemPrompt}\n\nUser: ${c.parts[0].text}` }] }
+              : c
+          )
+        : contents;
 
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${step.model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const reqBody = {
+        contents: reqContents,
+        generationConfig: {
+          temperature: vibe === "serious" || mode === "study" ? 0.4 : 0.85,
+          maxOutputTokens: 1024
+        }
+      };
+      if (!isGemma) {
+        reqBody.system_instruction = { parts: [{ text: systemPrompt }] };
+      }
+
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`;
       const apiRes = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: payload
+        body: JSON.stringify(reqBody)
       });
 
       const data = await apiRes.json().catch(() => ({}));
@@ -98,11 +141,8 @@ module.exports = async function handler(req, res) {
       }
 
       lastStatus = apiRes.status;
-      lastError = data?.error?.message || lastError;
-
-      if (apiRes.status === 401 || apiRes.status === 403) {
-        break;
-      }
+      lastError = `[${modelId}] ${data?.error?.message || lastError}`;
+      if (apiRes.status === 401 || apiRes.status === 403) break;
     }
 
     return res.status(lastStatus).json({ error: lastError });
