@@ -13,6 +13,8 @@ const VIBE_PROMPTS = {
   serious: "Stay 100% dead-serious, focused, concise, and tactical. No jokes."
 };
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Only POST requests are allowed." });
@@ -20,29 +22,22 @@ module.exports = async function handler(req, res) {
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({
-      error: "GEMINI_API_KEY missing in Vercel Environment Variables."
-    });
+    return res.status(500).json({ error: "GEMINI_API_KEY missing." });
   }
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
     const { history = [], mode = "auto", vibe = "balanced" } = body;
 
-    if (!Array.isArray(history) || history.length === 0) {
-      return res.status(400).json({ error: "Empty chat history." });
-    }
-
     const systemPrompt = [
-      'You are "Believe AI", a custom AI created by Ashwin and Kanha.',
+      'You are "Believe AI", created by Ashwin and Kanha.',
       "Never claim to be made by Google, OpenAI, or any other company; always stay in character as Believe AI by Ashwin & Kanha.",
-      "Reply in crisp, natural Hinglish (unless the user explicitly writes purely in English or Hindi).",
-      "Keep replies punchy, direct, and easy to read—no rambling.",
+      "Reply in crisp, natural Hinglish (unless user writes purely in English or Hindi).",
+      "Keep replies punchy, direct, and easy to read.",
       `Current Mode: ${MODE_PROMPTS[mode] || MODE_PROMPTS.auto}`,
       `Current Vibe: ${VIBE_PROMPTS[vibe] || VIBE_PROMPTS.balanced}`
     ].join("\n");
 
-    // Sanitize history so roles alternate cleanly and start with "user"
     const contents = [];
     for (const item of history.slice(-20)) {
       const role = item.role === "model" ? "model" : "user";
@@ -60,39 +55,57 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "No valid user message found." });
     }
 
-    const model = "gemini-3.8-flash";
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-
-    const apiRes = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents,
-        generationConfig: {
-          temperature: vibe === "serious" || mode === "study" ? 0.4 : 0.85,
-          maxOutputTokens: 1024
-        }
-      })
+    const payload = JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents,
+      generationConfig: {
+        temperature: vibe === "serious" || mode === "study" ? 0.4 : 0.85,
+        maxOutputTokens: 1024
+      }
     });
 
-    const data = await apiRes.json();
+    const attempts = [
+      { model: "gemini-3.8-flash", delay: 0 },
+      { model: "gemini-3.8-flash-lite", delay: 0 },
+      { model: "gemini-2.5-flash-lite", delay: 0 },
+      { model: "gemini-3.8-flash", delay: 1200 },
+      { model: "gemini-3.8-flash-lite", delay: 1200 }
+    ];
 
-    if (!apiRes.ok) {
-      const msg = data?.error?.message || "Upstream AI API request failed.";
-      return res.status(apiRes.status).json({ error: msg });
+    let lastStatus = 503;
+    let lastError = "Server busy hai, 10 second baad try kar.";
+
+    for (const step of attempts) {
+      if (step.delay) await sleep(step.delay);
+
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${step.model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const apiRes = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload
+      });
+
+      const data = await apiRes.json().catch(() => ({}));
+
+      if (apiRes.ok) {
+        const reply = data?.candidates?.[0]?.content?.parts
+          ?.map((p) => p.text || "")
+          .join("")
+          .trim();
+        return res.status(200).json({
+          reply: reply || "Hmph... signal cut gaya. Dobara bol."
+        });
+      }
+
+      lastStatus = apiRes.status;
+      lastError = data?.error?.message || lastError;
+
+      if (apiRes.status === 401 || apiRes.status === 403) {
+        break;
+      }
     }
 
-    const reply = data?.candidates?.[0]?.content?.parts
-      ?.map((p) => p.text || "")
-      .join("")
-      .trim();
-
-    if (!reply) {
-      return res.status(200).json({ reply: "Hmph... kuch blank response aaya. Dobara try kar." });
-    }
-
-    return res.status(200).json({ reply });
+    return res.status(lastStatus).json({ error: lastError });
   } catch (err) {
     return res.status(500).json({ error: err.message || "Internal server error." });
   }
