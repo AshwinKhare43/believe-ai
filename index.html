@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Believe AI — By Ashwin &amp; Kanha</title>
+  <style>
+    :root {
+      --bg: #07080f;
+      --panel: #0e111d;
+      --panel-2: #14192a;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #edf1ff;
+      --muted: #8b95b5;
+      --accent: #00e5ff;
+      --accent-2: #7c3aed;
+      --glow: rgba(0, 229, 255, 0.28);
+      --danger: #ff3b6b;
+      --online: #22c55e;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background:
+        radial-gradient(circle at 12% 10%, var(--glow), transparent 36%),
+        radial-gradient(circle at 88% 90%, rgba(124, 58, 237, 0.18), transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      transition: background 0.35s ease;
+    }
+
+    .app {
+      max-width: 980px;
+      height: 100dvh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 10px;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(14, 17, 29, 0.85);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 24px -10px var(--glow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 18px var(--glow);
+      flex-shrink: 0;
+    }
+
+    .logo svg { width: 24px; height: 24px; fill: #07080f; }
+
+    .brand-info { min-width: 0; }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #ffffff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--online);
+      margin-top: 2px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--online);
+      box-shadow: 0 0 10px var(--online);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.55; }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .vibe-select, .icon-btn {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .vibe-select:hover, .icon-btn:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px -4px var(--glow);
+    }
+
+    .icon-btn.danger:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* Mode bar */
+    .modes {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .modes::-webkit-scrollbar { display: none; }
+
+    .mode-btn {
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      background: rgba(14, 17, 29, 0.75);
+      color: var(--muted);
+      padding: 7px 13px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .mode-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+    .mode-btn.active {
+      color: #07080f;
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 16px -2px var(--glow);
+    }
+
+    /* Chat area */
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      background: rgba(14, 17, 29, 0.65);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-box::-webkit-scrollbar { width: 6px; }
+    .chat-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+
+    .welcome {
+      margin: auto;
+      text-align: center;
+      max-width: 560px;
+      padding: 26px 20px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(20, 25, 42, 0.85), rgba(14, 17, 29, 0.75));
+      border: 1px solid var(--border);
+      box-shadow: 0 0 36px -14px var(--glow);
+    }
+
+    .welcome h2 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .welcome p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* Messages */
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 84%;
+      gap: 5px;
+      animation: fadeUp 0.2s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user { align-self: flex-end; align-items: flex-end; }
+    .msg.bot { align-self: flex-start; align-items: flex-start; }
+
+    .msg-meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 4px;
+    }
+
+    .bubble {
+      padding: 12px 15px;
+      border-radius: 16px;
+      font-size: 0.93rem;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .msg.user .bubble {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #06070d;
+      font-weight: 600;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.bot .bubble {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble p + p { margin-top: 8px; }
+    .bubble ul, .bubble ol { margin: 8px 0 8px 20px; }
+    .bubble li + li { margin-top: 4px; }
+    .bubble code {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.85em;
+      color: var(--accent);
+    }
+
+    .code-wrap {
+      margin: 10px 0;
+      background: #070912;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .code-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .code-wrap pre {
+      padding: 10px 12px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #dbe7ff;
+    }
+
+    .copy-mini {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 0.68rem;
+      cursor: pointer;
+    }
+    .copy-mini:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* Typing indicator */
+    .typing {
+      display: inline-flex;
+      gap: 5px;
+      padding: 4px 2px;
+    }
+    .typing span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: bounce 1.1s infinite ease-in-out;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.16s; }
+    .typing span:nth-child(3) { animation-delay: 0.32s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.55); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Input bar */
+    .composer {
+      background: rgba(14, 17, 29, 0.9);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .composer:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 18px -6px var(--glow);
+    }
+
+    textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+      max-height: 140px;
+      line-height: 1.45;
+      padding: 4px 6px;
+    }
+
+    textarea::placeholder { color: var(--muted); }
+
+    .send-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #06070d;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    @media (max-width: 640px) {
+      .app { padding: 8px; }
+      .header { flex-wrap: wrap; padding: 10px 12px; }
+      .header-actions { width: 100%; justify-content: space-between; }
+      .vibe-select { flex: 1; }
+      .msg { max-width: 92%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+        </div>
+        <div class="brand-info">
+          <div class="title-row">
+            <span class="title">BELIEVE AI</span>
+            <span class="badge">By Ashwin &amp; Kanha</span>
+          </div>
+          <div class="status"><span class="dot"></span>ONLINE</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <select id="vibeSelect" class="vibe-select" title="Personality Vibe">
+          <option value="balanced">Vibe: Balanced</option>
+          <option value="anime">Vibe: Anime Rival</option>
+          <option value="sarcastic">Vibe: Sarcastic</option>
+          <option value="serious">Vibe: Dead Serious</option>
+        </select>
+        <button id="clearBtn" class="icon-btn danger" title="Clear chat">Clear</button>
+      </div>
+    </header>
+
+    <nav class="modes" id="modeBar" aria-label="AI Modes">
+      <button class="mode-btn active" data-mode="auto">⚡ Auto</button>
+      <button class="mode-btn" data-mode="gaming">🎮 Gaming Buddy</button>
+      <button class="mode-btn" data-mode="study">📚 Study Helper</button>
+      <button class="mode-btn" data-mode="tech">💻 Tech Guru</button>
+      <button class="mode-btn" data-mode="roaster">🔥 Roaster</button>
+    </nav>
+
+    <main id="chatBox" class="chat-box"></main>
+
+    <form id="composer" class="composer">
+      <textarea id="promptInput" rows="1" placeholder="Mission batao... (Enter to send)"></textarea>
+      <button id="sendBtn" type="submit" class="send-btn">SEND ⚡</button>
+    </form>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "believe_ai_public_state_v1";
+
+    const MODE_CONFIG = {
+      auto: {
+        accent: "#00e5ff",
+        accent2: "#7c3aed",
+        glow: "rgba(0, 229, 255, 0.28)",
+        chips: [
+          "Minecraft survival pro tips do",
+          "Photosynthesis simple mein samjhao",
+          "Under ₹20k best gaming phone?",
+          "Mujhe ek tagda roast do"
+        ]
+      },
+      gaming: {
+        accent: "#22d3ee",
+        accent2: "#2563eb",
+        glow: "rgba(34, 211, 238, 0.30)",
+        chips: [
+          "Minecraft PvP God loadout batao",
+          "Blox Fruits fast level up strat?",
+          "Chess mein opening trap sikhao",
+          "Clutch karne ka pro mindset kya hai?"
+        ]
+      },
+      study: {
+        accent: "#34d399",
+        accent2: "#059669",
+        glow: "rgba(52, 211, 153, 0.28)",
+        chips: [
+          "Newton's 3 laws short mein samjhao",
+          "Algebra quadratic formula trick do",
+          "Exam se 1 din pehle revision plan",
+          "Tenses table simple Hinglish mein"
+        ]
+      },
+      tech: {
+        accent: "#a78bfa",
+        accent2: "#6d28d9",
+        glow: "rgba(167, 139, 250, 0.30)",
+        chips: [
+          "OIS vs EIS camera difference?",
+          "Windows PC fast karne ke 5 steps",
+          "Snapdragon vs Dimensity kaunsa best?",
+          "Free video editing apps without watermark"
+        ]
+      },
+      roaster: {
+        accent: "#ff3b6b",
+        accent2: "#ea580c",
+        glow: "rgba(255, 59, 107, 0.30)",
+        chips: [
+          "Main apne aap ko pro gamer samajhta hoon, roast me",
+          "Kal se padhai pakka shuru karunga",
+          "Mera friend hamesha late aata hai, roast line do",
+          "Ek anime style reality check do"
+        ]
+      }
+    };
+
+    let state = loadState();
+    let isBusy = false;
+
+    const chatBox = document.getElementById("chatBox");
+    const promptInput = document.getElementById("promptInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const composer = document.getElementById("composer");
+    const modeBar = document.getElementById("modeBar");
+    const vibeSelect = document.getElementById("vibeSelect");
+    const clearBtn = document.getElementById("clearBtn");
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return {
+            mode: MODE_CONFIG[parsed.mode] ? parsed.mode : "auto",
+            vibe: parsed.vibe || "balanced",
+            messages: Array.isArray(parsed.messages) ? parsed.messages : []
+          };
+        }
+      } catch (_) {}
+      return { mode: "auto", vibe: "balanced", messages: [] };
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (_) {}
+    }
+
+    function applyTheme() {
+      const cfg = MODE_CONFIG[state.mode] || MODE_CONFIG.auto;
+      document.documentElement.style.setProperty("--accent", cfg.accent);
+      document.documentElement.style.setProperty("--accent-2", cfg.accent2);
+      document.documentElement.style.setProperty("--glow", cfg.glow);
+      document.querySelectorAll(".mode-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.mode === state.mode);
+      });
+      vibeSelect.value = state.vibe;
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatMarkdown(text) {
+      const codeBlocks = [];
+      let safe = escapeHtml(text);
+
+      safe = safe.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+        const idx = codeBlocks.length;
+        const cleanCode = code.trimEnd();
+        codeBlocks.push(
+          `<div class="code-wrap"><div class="code-head"><span>${lang || "code"}</span><button type="button" class="copy-mini" data-copy-code="${idx}">Copy</button></div><pre><code>${cleanCode}</code></pre></div>`
+        );
+        return `@@CODEBLOCK_${idx}@@`;
+      });
+
+      safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
+      safe = safe.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      safe = safe.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+      const lines = safe.split("\n");
+      let html = "";
+      let inUl = false;
+      let inOl = false;
+
+      const closeLists = () => {
+        if (inUl) { html += "</ul>"; inUl = false; }
+        if (inOl) { html += "</ol>"; inOl = false; }
+      };
+
+      for (const line of lines) {
+        const ulMatch = line.match(/^\s*[-*]\s+(.*)$/);
+        const olMatch = line.match(/^\s*\d+\.\s+(.*)$/);
+        if (ulMatch) {
+          if (inOl) { html += "</ol>"; inOl = false; }
+          if (!inUl) { html += "<ul>"; inUl = true; }
+          html += `<li>${ulMatch[1]}</li>`;
+        } else if (olMatch) {
+          if (inUl) { html += "</ul>"; inUl = false; }
+          if (!inOl) { html += "<ol>"; inOl = true; }
+          html += `<li>${olMatch[1]}</li>`;
+        } else if (line.trim() === "") {
+          closeLists();
+        } else if (line.trim().startsWith("@@CODEBLOCK_")) {
+          closeLists();
+          html += line.trim();
+        } else {
+          closeLists();
+          html += `<p>${line}</p>`;
+        }
+      }
+      closeLists();
+
+      codeBlocks.forEach((block, i) => {
+        html = html.replace(`@@CODEBLOCK_${i}@@`, block);
+      });
+
+      return html;
+    }
+
+    function renderChat() {
+      chatBox.innerHTML = "";
+      if (state.messages.length === 0) {
+        const cfg = MODE_CONFIG[state.mode] || MODE_CONFIG.auto;
+        const welcome = document.createElement("div");
+        welcome.className = "welcome";
+        welcome.innerHTML = `
+          <h2>⚡ "Hmph... toh finally summon kar hi liya."</h2>
+          <p>Main hoon <strong>Believe AI</strong> (By Ashwin &amp; Kanha). Gaming, padhai, tech, ya tagda roast—mission choose karo aur start ho jao.</p>
+          <div class="chips">
+            ${cfg.chips.map((c) => `<button type="button" class="chip">${escapeHtml(c)}</button>`).join("")}
+          </div>
+        `;
+        welcome.querySelectorAll(".chip").forEach((chip) => {
+          chip.addEventListener("click", () => sendMessage(chip.textContent));
+        });
+        chatBox.appendChild(welcome);
+        return;
+      }
+
+      state.messages.forEach((m, idx) => {
+        const wrap = document.createElement("div");
+        wrap.className = `msg ${m.role === "user" ? "user" : "bot"}`;
+
+        const meta = document.createElement("div");
+        meta.className = "msg-meta";
+        meta.innerHTML = m.role === "user"
+          ? `<span>You</span>`
+          : `<span>⚡ Believe AI</span><button type="button" class="copy-mini" data-copy-msg="${idx}">Copy</button>`;
+
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.innerHTML = m.role === "user" ? `<p>${escapeHtml(m.text).replace(/\n/g, "<br>")}</p>` : formatMarkdown(m.text);
+
+        wrap.appendChild(meta);
+        wrap.appendChild(bubble);
+        chatBox.appendChild(wrap);
+      });
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    chatBox.addEventListener("click", async (e) => {
+      const msgBtn = e.target.closest("[data-copy-msg]");
+      if (msgBtn) {
+        const idx = Number(msgBtn.dataset.copyMsg);
+        const text = state.messages[idx]?.text || "";
+        await navigator.clipboard.writeText(text);
+        msgBtn.textContent = "Copied!";
+        setTimeout(() => (msgBtn.textContent = "Copy"), 1200);
+        return;
+      }
+      const codeBtn = e.target.closest("[data-copy-code]");
+      if (codeBtn) {
+        const pre = codeBtn.closest(".code-wrap")?.querySelector("pre");
+        if (pre) {
+          await navigator.clipboard.writeText(pre.textContent);
+          codeBtn.textContent = "Copied!";
+          setTimeout(() => (codeBtn.textContent = "Copy"), 1200);
+        }
+      }
+    });
+
+    function appendTyping() {
+      const wrap = document.createElement("div");
+      wrap.className = "msg bot";
+      wrap.id = "typingIndicator";
+      wrap.innerHTML = `
+        <div class="msg-meta"><span>⚡ Believe AI</span></div>
+        <div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>
+      `;
+      chatBox.appendChild(wrap);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function removeTyping() {
+      document.getElementById("typingIndicator")?.remove();
+    }
+
+    async function sendMessage(rawText) {
+      const text = rawText.trim();
+      if (!text || isBusy) return;
+
+      isBusy = true;
+      sendBtn.disabled = true;
+      promptInput.value = "";
+      promptInput.style.height = "auto";
+
+      state.messages.push({ role: "user", text });
+      saveState();
+      renderChat();
+      appendTyping();
+
+      try {
+        const recentHistory = state.messages.slice(-20);
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            history: recentHistory,
+            mode: state.mode,
+            vibe: state.vibe
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        removeTyping();
+
+        if (!res.ok) {
+          throw new Error(data.error || `Server error (${res.status})`);
+        }
+
+        state.messages.push({
+          role: "model",
+          text: data.reply || "Hmph... signal cut gaya. Dobara bol."
+        });
+      } catch (err) {
+        removeTyping();
+        state.messages.push({
+          role: "model",
+          text: `⚠️ **Connection Error:** ${err.message}\n\n*(Agar abhi deploy kiya hai toh check karo Vercel Environment Variables mein \`GEMINI_API_KEY\` set hai ya nahi.)*`
+        });
+      } finally {
+        saveState();
+        renderChat();
+        isBusy = false;
+        sendBtn.disabled = false;
+        promptInput.focus();
+      }
+    }
+
+    modeBar.addEventListener("click", (e) => {
+      const btn = e.target.closest(".mode-btn");
+      if (!btn) return;
+      state.mode = btn.dataset.mode;
+      saveState();
+      applyTheme();
+      if (state.messages.length === 0) renderChat();
+    });
+
+    vibeSelect.addEventListener("change", () => {
+      state.vibe = vibeSelect.value;
+      saveState();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      if (isBusy) return;
+      state.messages = [];
+      saveState();
+      renderChat();
+    });
+
+    composer.addEventListener("submit", (e) => {
+      e.preventDefault();
+      sendMessage(promptInput.value);
+    });
+
+    promptInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage(promptInput.value);
+      }
+    });
+
+    promptInput.addEventListener("input", () => {
+      promptInput.style.height = "auto";
+      promptInput.style.height = Math.min(promptInput.scrollHeight, 140) + "px";
+    });
+
+    applyTheme();
+    renderChat();
+  </script>
+</body>
+</html>
