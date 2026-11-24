@@ -293,14 +293,25 @@
       border: 1px solid rgba(0, 0, 0, 0.2);
     }
 
-    .gen-img {
+    /* Clean watermark-free crop frame */
+    .gen-img-wrap {
       width: 100%;
       max-width: 420px;
+      aspect-ratio: 1 / 1;
       border-radius: 12px;
-      display: block;
+      overflow: hidden;
       margin-top: 8px;
       border: 1px solid var(--border);
       background: rgba(0, 0, 0, 0.35);
+      cursor: zoom-in;
+    }
+
+    .gen-img {
+      width: 100%;
+      height: 113%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
     }
 
     .img-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -318,6 +329,50 @@
       transition: 0.2s;
     }
     .img-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .img-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* Full View Lightbox */
+    .img-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 6, 12, 0.88);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .img-modal.open { display: flex; }
+
+    .img-modal-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      max-width: 92vw;
+    }
+
+    .modal-img-wrap {
+      width: min(86vw, 76vh, 640px);
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      background: #07080f;
+    }
+
+    .modal-img-wrap img {
+      width: 100%;
+      height: 113%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+
+    .img-modal-actions { display: flex; gap: 10px; }
 
     .code-wrap {
       margin: 10px 0;
@@ -374,7 +429,6 @@
       40% { transform: scale(1); opacity: 1; }
     }
 
-    /* Composer with + button & attachment preview */
     .composer-wrap {
       position: relative;
       display: flex;
@@ -597,6 +651,18 @@
     </div>
   </div>
 
+  <div id="imgModal" class="img-modal" aria-hidden="true">
+    <div class="img-modal-box">
+      <div class="modal-img-wrap">
+        <img id="modalImg" src="" alt="Full View" />
+      </div>
+      <div class="img-modal-actions">
+        <button type="button" id="modalDownload" class="img-btn">⬇ Download Clean</button>
+        <button type="button" id="modalClose" class="img-btn danger">✕ Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = "believe_ai_public_state_v1";
 
@@ -672,6 +738,7 @@
     let state = loadState();
     let isBusy = false;
     let pendingImage = null;
+    let modalCurrentUrl = "";
 
     const chatBox = document.getElementById("chatBox");
     const promptInput = document.getElementById("promptInput");
@@ -690,6 +757,11 @@
     const attachThumb = document.getElementById("attachThumb");
     const attachName = document.getElementById("attachName");
     const removeAttach = document.getElementById("removeAttach");
+
+    const imgModal = document.getElementById("imgModal");
+    const modalImg = document.getElementById("modalImg");
+    const modalDownload = document.getElementById("modalDownload");
+    const modalClose = document.getElementById("modalClose");
 
     function loadState() {
       try {
@@ -814,7 +886,7 @@
         welcome.innerHTML = state.mode === "image"
           ? `
             <h2>🎨 Believe AI — Image Studio</h2>
-            <p>Jo imagine karo, likh do — 100% free image turant generate hogi.</p>
+            <p>Jo imagine karo, likh do — 100% free &amp; watermark-free image turant banegi.</p>
             <div class="chips">
               ${cfg.chips.map((c) => `<button type="button" class="chip">${escapeHtml(c)}</button>`).join("")}
             </div>
@@ -866,10 +938,12 @@
           const safePrompt = escapeHtml(m.prompt || "");
           bubble.innerHTML = `
             <p><strong>Prompt:</strong> ${safePrompt}</p>
-            <img src="${safeUrl}" alt="${safePrompt}" class="gen-img" loading="lazy" />
+            <div class="gen-img-wrap" data-view-img="${safeUrl}">
+              <img src="${safeUrl}" alt="${safePrompt}" class="gen-img" loading="lazy" />
+            </div>
             <div class="img-actions">
               <button type="button" class="img-btn" data-download-img="${safeUrl}">⬇ Download</button>
-              <a href="${safeUrl}" target="_blank" rel="noopener" class="img-btn">↗ Full View</a>
+              <button type="button" class="img-btn" data-view-img="${safeUrl}">🔍 Full View</button>
             </div>
           `;
         } else {
@@ -883,6 +957,73 @@
 
       chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    async function downloadCleanImage(url, btn) {
+      const oldText = btn.textContent;
+      btn.textContent = "Saving...";
+      btn.disabled = true;
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error("Fetch failed");
+        const srcBlob = await resp.blob();
+        const srcUrl = URL.createObjectURL(srcBlob);
+        const img = await new Promise((resolve, reject) => {
+          const i = new Image();
+          i.onload = () => resolve(i);
+          i.onerror = () => reject(new Error("Load failed"));
+          i.src = srcUrl;
+        });
+
+        const w = img.naturalWidth;
+        const cropH = Math.round(img.naturalHeight * 0.885);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = cropH;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, cropH, 0, 0, w, cropH);
+        URL.revokeObjectURL(srcUrl);
+
+        const cleanBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.94));
+        const dlUrl = URL.createObjectURL(cleanBlob);
+        const a = document.createElement("a");
+        a.href = dlUrl;
+        a.download = `believe-ai-${Date.now()}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(dlUrl), 1500);
+        btn.textContent = "Saved!";
+      } catch (_) {
+        btn.textContent = "Retry!";
+      } finally {
+        btn.disabled = false;
+        setTimeout(() => (btn.textContent = oldText), 1500);
+      }
+    }
+
+    function openImageModal(url) {
+      modalCurrentUrl = url;
+      modalImg.src = url;
+      imgModal.classList.add("open");
+      imgModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeImageModal() {
+      imgModal.classList.remove("open");
+      imgModal.setAttribute("aria-hidden", "true");
+      modalImg.src = "";
+      modalCurrentUrl = "";
+    }
+
+    modalClose.addEventListener("click", closeImageModal);
+    imgModal.addEventListener("click", (e) => {
+      if (e.target === imgModal) closeImageModal();
+    });
+    modalDownload.addEventListener("click", () => {
+      if (modalCurrentUrl) downloadCleanImage(modalCurrentUrl, modalDownload);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && imgModal.classList.contains("open")) closeImageModal();
+    });
 
     function compressImage(file) {
       return new Promise((resolve, reject) => {
@@ -998,26 +1139,13 @@
 
       const dlBtn = e.target.closest("[data-download-img]");
       if (dlBtn) {
-        const url = dlBtn.dataset.downloadImg;
-        dlBtn.textContent = "Saving...";
-        try {
-          const resp = await fetch(url);
-          if (!resp.ok) throw new Error("Download failed");
-          const blob = await resp.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = blobUrl;
-          a.download = `believe-ai-${Date.now()}.jpg`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(blobUrl);
-          dlBtn.textContent = "Saved!";
-        } catch (_) {
-          window.open(url, "_blank", "noopener");
-          dlBtn.textContent = "Opened!";
-        }
-        setTimeout(() => (dlBtn.textContent = "⬇ Download"), 1500);
+        downloadCleanImage(dlBtn.dataset.downloadImg, dlBtn);
+        return;
+      }
+
+      const viewEl = e.target.closest("[data-view-img]");
+      if (viewEl) {
+        openImageModal(viewEl.dataset.viewImg);
       }
     });
 
@@ -1088,7 +1216,7 @@
         appendTyping("Image ban rahi hai (5–15 sec)...");
         try {
           const seed = Math.floor(Math.random() * 1000000);
-          const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&seed=${seed}&nologo=true`;
+          const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1152&seed=${seed}&nologo=true`;
           await preloadImage(imgUrl);
           removeTyping();
           state.messages.push({
