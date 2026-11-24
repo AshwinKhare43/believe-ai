@@ -49,7 +49,7 @@ async function getAvailableModels(apiKey) {
       .sort((a, b) => scoreModel(b) - scoreModel(a));
 
     if (list.length > 0) {
-      cachedModels = list.slice(0, 5);
+      cachedModels = list.slice(0, 6);
       return cachedModels;
     }
   } catch (_) {}
@@ -72,7 +72,7 @@ module.exports = async function handler(req, res) {
 
     const systemPrompt = [
       'You are "Believe AI". If anyone asks who made you, clearly say that Ashwin coded and built you, while Kanha gave the idea.',
-"Never claim to be made by Google, OpenAI, or any other company; always stay in character as Believe AI (coded by Ashwin, idea by Kanha).",
+      "Never claim to be made by Google, OpenAI, or any other company; always stay in character as Believe AI (coded by Ashwin, idea by Kanha).",
       "Reply in crisp, natural Hinglish (unless user writes purely in English or Hindi).",
       "Keep replies punchy, direct, and easy to read.",
       `Current Mode: ${MODE_PROMPTS[mode] || MODE_PROMPTS.auto}`,
@@ -83,12 +83,24 @@ module.exports = async function handler(req, res) {
     for (const item of history.slice(-20)) {
       const role = item.role === "model" ? "model" : "user";
       const text = String(item.text || "").trim();
-      if (!text) continue;
+      const parts = [];
+
+      if (item.image && item.image.data) {
+        parts.push({
+          inline_data: {
+            mime_type: item.image.mimeType || "image/jpeg",
+            data: item.image.data
+          }
+        });
+      }
+      if (text) parts.push({ text });
+      if (parts.length === 0) continue;
       if (contents.length === 0 && role !== "user") continue;
+
       if (contents.length > 0 && contents[contents.length - 1].role === role) {
-        contents[contents.length - 1].parts[0].text += "\n" + text;
+        contents[contents.length - 1].parts.push(...parts);
       } else {
-        contents.push({ role, parts: [{ text }] });
+        contents.push({ role, parts });
       }
     }
 
@@ -96,7 +108,14 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "No valid user message found." });
     }
 
-    const models = await getAvailableModels(apiKey);
+    const hasImage = contents.some((c) => c.parts.some((p) => p.inline_data));
+    let models = await getAvailableModels(apiKey);
+    if (hasImage) {
+      const visionFirst = models.filter((m) => /^gemini/i.test(m));
+      const others = models.filter((m) => !/^gemini/i.test(m));
+      models = [...visionFirst, ...others];
+    }
+
     let lastStatus = 503;
     let lastError = "Sabhi models abhi busy hain, thodi der baad try kar.";
 
@@ -105,7 +124,7 @@ module.exports = async function handler(req, res) {
       const reqContents = isGemma
         ? contents.map((c, i) =>
             i === 0
-              ? { role: c.role, parts: [{ text: `${systemPrompt}\n\nUser: ${c.parts[0].text}` }] }
+              ? { role: c.role, parts: [{ text: `${systemPrompt}\n\nUser:` }, ...c.parts] }
               : c
           )
         : contents;
