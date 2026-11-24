@@ -328,6 +328,42 @@
       color: var(--accent);
     }
 
+    /* Generated image card */
+    .gen-img {
+      width: 100%;
+      max-width: 420px;
+      border-radius: 12px;
+      display: block;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .img-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .img-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 5px 11px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .img-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     .code-wrap {
       margin: 10px 0;
       background: #070912;
@@ -367,6 +403,14 @@
     .copy-mini:hover { color: var(--accent); border-color: var(--accent); }
 
     /* Typing indicator */
+    .typing-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
     .typing {
       display: inline-flex;
       gap: 5px;
@@ -477,6 +521,7 @@
       <button class="mode-btn" data-mode="study">📚 Study Helper</button>
       <button class="mode-btn" data-mode="tech">💻 Tech Guru</button>
       <button class="mode-btn" data-mode="roaster">🔥 Roaster</button>
+      <button class="mode-btn" data-mode="image">🎨 Image Gen</button>
     </nav>
 
     <main id="chatBox" class="chat-box"></main>
@@ -545,6 +590,17 @@
           "Mera friend hamesha late aata hai, roast line do",
           "Ek anime style reality check do"
         ]
+      },
+      image: {
+        accent: "#f472b6",
+        accent2: "#7c3aed",
+        glow: "rgba(244, 114, 182, 0.30)",
+        chips: [
+          "Cyberpunk samurai standing in neon Tokyo rain, 4k",
+          "Cute glowing baby dragon sitting on a gaming keyboard",
+          "Futuristic flying car over a neon city at sunset",
+          "Anime warrior with blue lightning aura, dark background"
+        ]
       }
     };
 
@@ -589,10 +645,14 @@
         btn.classList.toggle("active", btn.dataset.mode === state.mode);
       });
       vibeSelect.value = state.vibe;
+      promptInput.placeholder = state.mode === "image"
+        ? "Image prompt likho (English mein best result)..."
+        : "Mission batao... (Enter to send)";
+      sendBtn.textContent = state.mode === "image" ? "CREATE 🎨" : "SEND ⚡";
     }
 
     function escapeHtml(str) {
-      return str
+      return String(str)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -662,13 +722,21 @@
         const cfg = MODE_CONFIG[state.mode] || MODE_CONFIG.auto;
         const welcome = document.createElement("div");
         welcome.className = "welcome";
-        welcome.innerHTML = `
-          <h2>⚡ "Hmph... toh finally summon kar hi liya."</h2>
-          <p>Main hoon <strong>Believe AI</strong> (By Ashwin &amp; Kanha). Gaming, padhai, tech, ya tagda roast—mission choose karo aur start ho jao.</p>
-          <div class="chips">
-            ${cfg.chips.map((c) => `<button type="button" class="chip">${escapeHtml(c)}</button>`).join("")}
-          </div>
-        `;
+        welcome.innerHTML = state.mode === "image"
+          ? `
+            <h2>🎨 Believe AI — Image Studio</h2>
+            <p>Jo imagine karo, likh do — 100% free image turant generate hogi.</p>
+            <div class="chips">
+              ${cfg.chips.map((c) => `<button type="button" class="chip">${escapeHtml(c)}</button>`).join("")}
+            </div>
+          `
+          : `
+            <h2>⚡ "Hmph... toh finally summon kar hi liya."</h2>
+            <p>Main hoon <strong>Believe AI</strong> (By Ashwin &amp; Kanha). Gaming, padhai, tech, roast ya 🎨 image generation—mission choose karo aur start ho jao.</p>
+            <div class="chips">
+              ${cfg.chips.map((c) => `<button type="button" class="chip">${escapeHtml(c)}</button>`).join("")}
+            </div>
+          `;
         welcome.querySelectorAll(".chip").forEach((chip) => {
           chip.addEventListener("click", () => sendMessage(chip.textContent));
         });
@@ -682,13 +750,33 @@
 
         const meta = document.createElement("div");
         meta.className = "msg-meta";
-        meta.innerHTML = m.role === "user"
-          ? `<span>You</span>`
-          : `<span>⚡ Believe AI</span><button type="button" class="copy-mini" data-copy-msg="${idx}">Copy</button>`;
+        if (m.role === "user") {
+          meta.innerHTML = `<span>You</span>`;
+        } else if (m.type === "image") {
+          meta.innerHTML = `<span>🎨 Believe AI Image</span>`;
+        } else {
+          meta.innerHTML = `<span>⚡ Believe AI</span><button type="button" class="copy-mini" data-copy-msg="${idx}">Copy</button>`;
+        }
 
         const bubble = document.createElement("div");
         bubble.className = "bubble";
-        bubble.innerHTML = m.role === "user" ? `<p>${escapeHtml(m.text).replace(/\n/g, "<br>")}</p>` : formatMarkdown(m.text);
+
+        if (m.role === "user") {
+          bubble.innerHTML = `<p>${escapeHtml(m.text).replace(/\n/g, "<br>")}</p>`;
+        } else if (m.type === "image") {
+          const safeUrl = escapeHtml(m.url);
+          const safePrompt = escapeHtml(m.prompt || "");
+          bubble.innerHTML = `
+            <p><strong>Prompt:</strong> ${safePrompt}</p>
+            <img src="${safeUrl}" alt="${safePrompt}" class="gen-img" loading="lazy" />
+            <div class="img-actions">
+              <button type="button" class="img-btn" data-download-img="${safeUrl}">⬇ Download</button>
+              <a href="${safeUrl}" target="_blank" rel="noopener" class="img-btn">↗ Full View</a>
+            </div>
+          `;
+        } else {
+          bubble.innerHTML = formatMarkdown(m.text);
+        }
 
         wrap.appendChild(meta);
         wrap.appendChild(bubble);
@@ -708,6 +796,7 @@
         setTimeout(() => (msgBtn.textContent = "Copy"), 1200);
         return;
       }
+
       const codeBtn = e.target.closest("[data-copy-code]");
       if (codeBtn) {
         const pre = codeBtn.closest(".code-wrap")?.querySelector("pre");
@@ -716,16 +805,46 @@
           codeBtn.textContent = "Copied!";
           setTimeout(() => (codeBtn.textContent = "Copy"), 1200);
         }
+        return;
+      }
+
+      const dlBtn = e.target.closest("[data-download-img]");
+      if (dlBtn) {
+        const url = dlBtn.dataset.downloadImg;
+        dlBtn.textContent = "Saving...";
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error("Download failed");
+          const blob = await resp.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = `believe-ai-${Date.now()}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(blobUrl);
+          dlBtn.textContent = "Saved!";
+        } catch (_) {
+          window.open(url, "_blank", "noopener");
+          dlBtn.textContent = "Opened!";
+        }
+        setTimeout(() => (dlBtn.textContent = "⬇ Download"), 1500);
       }
     });
 
-    function appendTyping() {
+    function appendTyping(label) {
       const wrap = document.createElement("div");
       wrap.className = "msg bot";
       wrap.id = "typingIndicator";
       wrap.innerHTML = `
-        <div class="msg-meta"><span>⚡ Believe AI</span></div>
-        <div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>
+        <div class="msg-meta"><span>${label ? "🎨 Believe AI Image" : "⚡ Believe AI"}</span></div>
+        <div class="bubble">
+          <div class="typing-wrap">
+            <div class="typing"><span></span><span></span><span></span></div>
+            ${label ? `<span>${escapeHtml(label)}</span>` : ""}
+          </div>
+        </div>
       `;
       chatBox.appendChild(wrap);
       chatBox.scrollTop = chatBox.scrollHeight;
@@ -733,6 +852,25 @@
 
     function removeTyping() {
       document.getElementById("typingIndicator")?.remove();
+    }
+
+    function preloadImage(url, timeoutMs = 45000) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const timer = setTimeout(() => {
+          img.onload = img.onerror = null;
+          reject(new Error("Image server slow hai, thodi der baad dobara try karo."));
+        }, timeoutMs);
+        img.onload = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+        img.onerror = () => {
+          clearTimeout(timer);
+          reject(new Error("Image generate nahi ho payi — server busy ho sakta hai, dobara try karo."));
+        };
+        img.src = url;
+      });
     }
 
     async function sendMessage(rawText) {
@@ -747,10 +885,45 @@
       state.messages.push({ role: "user", text });
       saveState();
       renderChat();
+
+      if (state.mode === "image") {
+        appendTyping("Image ban rahi hai (5–15 sec)...");
+        try {
+          const seed = Math.floor(Math.random() * 1000000);
+          const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&seed=${seed}&nologo=true`;
+          await preloadImage(imgUrl);
+          removeTyping();
+          state.messages.push({
+            role: "model",
+            type: "image",
+            text: `Generated image: ${text}`,
+            url: imgUrl,
+            prompt: text
+          });
+        } catch (err) {
+          removeTyping();
+          state.messages.push({
+            role: "model",
+            text: `⚠️ **Image Error:** ${err.message}`
+          });
+        } finally {
+          saveState();
+          renderChat();
+          isBusy = false;
+          sendBtn.disabled = false;
+          promptInput.focus();
+        }
+        return;
+      }
+
       appendTyping();
 
       try {
-        const recentHistory = state.messages.slice(-20);
+        const recentHistory = state.messages.slice(-20).map((m) => ({
+          role: m.role,
+          text: m.type === "image" ? `[Generated image for: ${m.prompt}]` : m.text
+        }));
+
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
