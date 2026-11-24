@@ -45,7 +45,6 @@
       gap: 10px;
     }
 
-    /* Header */
     .header {
       background: rgba(14, 17, 29, 0.85);
       backdrop-filter: blur(14px);
@@ -59,12 +58,7 @@
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 24px -10px var(--glow);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
 
     .logo {
       width: 42px;
@@ -78,21 +72,9 @@
       flex-shrink: 0;
     }
 
-    .logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
+    .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .brand-info { min-width: 0; }
-
-    .title-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     .title {
       font-weight: 800;
@@ -140,12 +122,7 @@
       50% { transform: scale(1.35); opacity: 0.55; }
     }
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
     .vibe-select, .icon-btn {
       background: var(--panel-2);
@@ -165,12 +142,8 @@
       box-shadow: 0 0 12px -4px var(--glow);
     }
 
-    .icon-btn.danger:hover {
-      border-color: var(--danger);
-      color: var(--danger);
-    }
+    .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
 
-    /* Mode bar */
     .modes {
       display: flex;
       gap: 8px;
@@ -202,7 +175,6 @@
       box-shadow: 0 0 16px -2px var(--glow);
     }
 
-    /* Chat area */
     .chat-box {
       flex: 1;
       overflow-y: auto;
@@ -230,25 +202,9 @@
       box-shadow: 0 0 36px -14px var(--glow);
     }
 
-    .welcome h2 {
-      font-size: 1.25rem;
-      margin-bottom: 8px;
-      color: #fff;
-    }
-
-    .welcome p {
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.5;
-      margin-bottom: 18px;
-    }
-
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-    }
+    .welcome h2 { font-size: 1.25rem; margin-bottom: 8px; color: #fff; }
+    .welcome p { color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 18px; }
+    .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 
     .chip {
       background: rgba(255, 255, 255, 0.04);
@@ -267,7 +223,6 @@
       transform: translateY(-1px);
     }
 
-    /* Messages */
     .msg {
       display: flex;
       flex-direction: column;
@@ -328,7 +283,16 @@
       color: var(--accent);
     }
 
-    /* Generated image card */
+    .user-img {
+      max-width: 240px;
+      max-height: 220px;
+      border-radius: 10px;
+      display: block;
+      margin-bottom: 6px;
+      object-fit: cover;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+    }
+
     .gen-img {
       width: 100%;
       max-width: 420px;
@@ -339,12 +303,7 @@
       background: rgba(0, 0, 0, 0.35);
     }
 
-    .img-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
+    .img-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 
     .img-btn {
       background: rgba(255, 255, 255, 0.06);
@@ -358,11 +317,7 @@
       text-decoration: none;
       transition: 0.2s;
     }
-
-    .img-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+    .img-btn:hover { border-color: var(--accent); color: var(--accent); }
 
     .code-wrap {
       margin: 10px 0;
@@ -402,20 +357,8 @@
     }
     .copy-mini:hover { color: var(--accent); border-color: var(--accent); }
 
-    /* Typing indicator */
-    .typing-wrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-
-    .typing {
-      display: inline-flex;
-      gap: 5px;
-      padding: 4px 2px;
-    }
+    .typing-wrap { display: inline-flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--muted); }
+    .typing { display: inline-flex; gap: 5px; padding: 4px 2px; }
     .typing span {
       width: 7px;
       height: 7px;
@@ -431,7 +374,91 @@
       40% { transform: scale(1); opacity: 1; }
     }
 
-    /* Input bar */
+    /* Composer with + button & attachment preview */
+    .composer-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .attachment-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: rgba(20, 25, 42, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px 10px;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .attachment-bar.show { display: flex; }
+
+    .attachment-bar img {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .attachment-name {
+      font-size: 0.78rem;
+      color: var(--text);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .remove-attach {
+      background: rgba(255, 59, 107, 0.18);
+      color: var(--danger);
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .plus-menu {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      background: #14192a;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 190px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      z-index: 30;
+    }
+
+    .plus-menu.open { display: flex; }
+
+    .plus-item {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.15s;
+    }
+
+    .plus-item:hover { background: rgba(255, 255, 255, 0.08); color: var(--accent); }
+
     .composer {
       background: rgba(14, 17, 29, 0.9);
       border: 1px solid var(--border);
@@ -447,6 +474,28 @@
       box-shadow: 0 0 18px -6px var(--glow);
     }
 
+    .plus-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1.4rem;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: 0.2s;
+    }
+
+    .plus-btn:hover, .plus-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0, 229, 255, 0.1);
+    }
+
     textarea {
       flex: 1;
       background: transparent;
@@ -458,7 +507,7 @@
       outline: none;
       max-height: 140px;
       line-height: 1.45;
-      padding: 4px 6px;
+      padding: 6px 4px;
     }
 
     textarea::placeholder { color: var(--muted); }
@@ -526,10 +575,26 @@
 
     <main id="chatBox" class="chat-box"></main>
 
-    <form id="composer" class="composer">
-      <textarea id="promptInput" rows="1" placeholder="Mission batao... (Enter to send)"></textarea>
-      <button id="sendBtn" type="submit" class="send-btn">SEND ⚡</button>
-    </form>
+    <div class="composer-wrap">
+      <div id="attachmentBar" class="attachment-bar">
+        <img id="attachThumb" src="" alt="Preview" />
+        <span id="attachName" class="attachment-name"></span>
+        <button id="removeAttach" type="button" class="remove-attach" title="Remove photo">×</button>
+      </div>
+
+      <div id="plusMenu" class="plus-menu">
+        <button type="button" id="uploadPhotoBtn" class="plus-item">📷 Upload Photo</button>
+        <button type="button" id="createImgBtn" class="plus-item">🎨 Create Image</button>
+      </div>
+
+      <input type="file" id="imageInput" accept="image/*" hidden />
+
+      <form id="composer" class="composer">
+        <button id="plusBtn" type="button" class="plus-btn" title="Attach or Create">+</button>
+        <textarea id="promptInput" rows="1" placeholder="Mission batao... (Enter to send)"></textarea>
+        <button id="sendBtn" type="submit" class="send-btn">SEND ⚡</button>
+      </form>
+    </div>
   </div>
 
   <script>
@@ -606,6 +671,7 @@
 
     let state = loadState();
     let isBusy = false;
+    let pendingImage = null;
 
     const chatBox = document.getElementById("chatBox");
     const promptInput = document.getElementById("promptInput");
@@ -614,6 +680,16 @@
     const modeBar = document.getElementById("modeBar");
     const vibeSelect = document.getElementById("vibeSelect");
     const clearBtn = document.getElementById("clearBtn");
+
+    const plusBtn = document.getElementById("plusBtn");
+    const plusMenu = document.getElementById("plusMenu");
+    const uploadPhotoBtn = document.getElementById("uploadPhotoBtn");
+    const createImgBtn = document.getElementById("createImgBtn");
+    const imageInput = document.getElementById("imageInput");
+    const attachmentBar = document.getElementById("attachmentBar");
+    const attachThumb = document.getElementById("attachThumb");
+    const attachName = document.getElementById("attachName");
+    const removeAttach = document.getElementById("removeAttach");
 
     function loadState() {
       try {
@@ -632,7 +708,20 @@
 
     function saveState() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        const safeMessages = state.messages.map((m) => {
+          const copy = { ...m };
+          if (copy.image) {
+            delete copy.image;
+            delete copy.previewUrl;
+            copy.hadImage = true;
+          }
+          return copy;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          mode: state.mode,
+          vibe: state.vibe,
+          messages: safeMessages
+        }));
       } catch (_) {}
     }
 
@@ -732,7 +821,7 @@
           `
           : `
             <h2>⚡ "Hmph... toh finally summon kar hi liya."</h2>
-            <p>Main hoon <strong>Believe AI</strong> (By Ashwin &amp; Kanha). Gaming, padhai, tech, roast ya 🎨 image generation—mission choose karo aur start ho jao.</p>
+            <p>Main hoon <strong>Believe AI</strong> (Coded by Ashwin, Idea by Kanha). <strong>+</strong> button se photo upload karo ya image banao!</p>
             <div class="chips">
               ${cfg.chips.map((c) => `<button type="button" class="chip">${escapeHtml(c)}</button>`).join("")}
             </div>
@@ -762,7 +851,16 @@
         bubble.className = "bubble";
 
         if (m.role === "user") {
-          bubble.innerHTML = `<p>${escapeHtml(m.text).replace(/\n/g, "<br>")}</p>`;
+          let inner = "";
+          if (m.previewUrl) {
+            inner += `<img src="${m.previewUrl}" alt="Uploaded" class="user-img" />`;
+          } else if (m.hadImage) {
+            inner += `<p><em>📷 [Photo attached]</em></p>`;
+          }
+          if (m.text) {
+            inner += `<p>${escapeHtml(m.text).replace(/\n/g, "<br>")}</p>`;
+          }
+          bubble.innerHTML = inner;
         } else if (m.type === "image") {
           const safeUrl = escapeHtml(m.url);
           const safePrompt = escapeHtml(m.prompt || "");
@@ -786,12 +884,102 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Photo read nahi ho payi."));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error("Invalid image file."));
+          img.onload = () => {
+            const maxDim = 1024;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+              else { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+            resolve({
+              mimeType: "image/jpeg",
+              data: dataUrl.split(",")[1],
+              previewUrl: dataUrl,
+              name: file.name || "photo.jpg"
+            });
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function clearAttachment() {
+      pendingImage = null;
+      imageInput.value = "";
+      attachmentBar.classList.remove("show");
+      attachThumb.src = "";
+      attachName.textContent = "";
+    }
+
+    plusBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = plusMenu.classList.toggle("open");
+      plusBtn.classList.toggle("active", open);
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!plusMenu.contains(e.target) && e.target !== plusBtn) {
+        plusMenu.classList.remove("open");
+        plusBtn.classList.remove("active");
+      }
+    });
+
+    uploadPhotoBtn.addEventListener("click", () => {
+      plusMenu.classList.remove("open");
+      plusBtn.classList.remove("active");
+      imageInput.click();
+    });
+
+    createImgBtn.addEventListener("click", () => {
+      plusMenu.classList.remove("open");
+      plusBtn.classList.remove("active");
+      clearAttachment();
+      state.mode = "image";
+      saveState();
+      applyTheme();
+      if (state.messages.length === 0) renderChat();
+      promptInput.focus();
+    });
+
+    imageInput.addEventListener("change", async () => {
+      const file = imageInput.files?.[0];
+      if (!file) return;
+      try {
+        pendingImage = await compressImage(file);
+        attachThumb.src = pendingImage.previewUrl;
+        attachName.textContent = pendingImage.name;
+        attachmentBar.classList.add("show");
+        if (state.mode === "image") {
+          state.mode = "auto";
+          applyTheme();
+        }
+        promptInput.focus();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    removeAttach.addEventListener("click", clearAttachment);
+
     chatBox.addEventListener("click", async (e) => {
       const msgBtn = e.target.closest("[data-copy-msg]");
       if (msgBtn) {
         const idx = Number(msgBtn.dataset.copyMsg);
-        const text = state.messages[idx]?.text || "";
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(state.messages[idx]?.text || "");
         msgBtn.textContent = "Copied!";
         setTimeout(() => (msgBtn.textContent = "Copy"), 1200);
         return;
@@ -861,32 +1049,42 @@
           img.onload = img.onerror = null;
           reject(new Error("Image server slow hai, thodi der baad dobara try karo."));
         }, timeoutMs);
-        img.onload = () => {
-          clearTimeout(timer);
-          resolve();
-        };
-        img.onerror = () => {
-          clearTimeout(timer);
-          reject(new Error("Image generate nahi ho payi — server busy ho sakta hai, dobara try karo."));
-        };
+        img.onload = () => { clearTimeout(timer); resolve(); };
+        img.onerror = () => { clearTimeout(timer); reject(new Error("Image generate nahi ho payi, dobara try karo.")); };
         img.src = url;
       });
     }
 
     async function sendMessage(rawText) {
       const text = rawText.trim();
-      if (!text || isBusy) return;
+      const attached = pendingImage;
+      if ((!text && !attached) || isBusy) return;
 
       isBusy = true;
       sendBtn.disabled = true;
       promptInput.value = "";
       promptInput.style.height = "auto";
+      clearAttachment();
 
-      state.messages.push({ role: "user", text });
+      if (attached && state.mode === "image") {
+        state.mode = "auto";
+        applyTheme();
+      }
+
+      const userMsg = {
+        role: "user",
+        text: text || "Is photo ke baare mein batao"
+      };
+      if (attached) {
+        userMsg.image = { mimeType: attached.mimeType, data: attached.data };
+        userMsg.previewUrl = attached.previewUrl;
+      }
+
+      state.messages.push(userMsg);
       saveState();
       renderChat();
 
-      if (state.mode === "image") {
+      if (state.mode === "image" && !attached) {
         appendTyping("Image ban rahi hai (5–15 sec)...");
         try {
           const seed = Math.floor(Math.random() * 1000000);
@@ -902,10 +1100,7 @@
           });
         } catch (err) {
           removeTyping();
-          state.messages.push({
-            role: "model",
-            text: `⚠️ **Image Error:** ${err.message}`
-          });
+          state.messages.push({ role: "model", text: `⚠️ **Image Error:** ${err.message}` });
         } finally {
           saveState();
           renderChat();
@@ -919,9 +1114,11 @@
       appendTyping();
 
       try {
-        const recentHistory = state.messages.slice(-20).map((m) => ({
+        const recent = state.messages.slice(-20);
+        const recentHistory = recent.map((m, i) => ({
           role: m.role,
-          text: m.type === "image" ? `[Generated image for: ${m.prompt}]` : m.text
+          text: m.type === "image" ? `[Generated image for: ${m.prompt}]` : m.text,
+          image: i >= recent.length - 2 && m.image ? m.image : undefined
         }));
 
         const res = await fetch("/api/chat", {
@@ -937,9 +1134,7 @@
         const data = await res.json().catch(() => ({}));
         removeTyping();
 
-        if (!res.ok) {
-          throw new Error(data.error || `Server error (${res.status})`);
-        }
+        if (!res.ok) throw new Error(data.error || `Server error (${res.status})`);
 
         state.messages.push({
           role: "model",
@@ -949,7 +1144,7 @@
         removeTyping();
         state.messages.push({
           role: "model",
-          text: `⚠️ **Connection Error:** ${err.message}\n\n*(Agar abhi deploy kiya hai toh check karo Vercel Environment Variables mein \`GEMINI_API_KEY\` set hai ya nahi.)*`
+          text: `⚠️ **Connection Error:** ${err.message}`
         });
       } finally {
         saveState();
@@ -977,6 +1172,7 @@
     clearBtn.addEventListener("click", () => {
       if (isBusy) return;
       state.messages = [];
+      clearAttachment();
       saveState();
       renderChat();
     });
