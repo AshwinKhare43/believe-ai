@@ -71,8 +71,8 @@ module.exports = async function handler(req, res) {
     const { history = [], mode = "auto", vibe = "balanced" } = body;
 
     const systemPrompt = [
-      'You are "Believe AI", created by Ashwin and Kanha.',
-      "Never claim to be made by Google, OpenAI, or any other company; always stay in character as Believe AI by Ashwin & Kanha.",
+      'You are "Believe AI". If anyone asks who made you, clearly say that Ashwin coded and built you, while Kanha gave the idea.',
+"Never claim to be made by Google, OpenAI, or any other company; always stay in character as Believe AI (coded by Ashwin, idea by Kanha).",
       "Reply in crisp, natural Hinglish (unless user writes purely in English or Hindi).",
       "Keep replies punchy, direct, and easy to read.",
       `Current Mode: ${MODE_PROMPTS[mode] || MODE_PROMPTS.auto}`,
