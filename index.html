@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Believe AI — By Ashwin &amp; Kanha</title>
+  <link rel="icon" type="image/png" href="logo.png" />
   <style>
     :root {
       --bg: #07080f;
@@ -69,14 +70,20 @@
       width: 42px;
       height: 42px;
       border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      background: #10162e;
+      overflow: hidden;
       display: grid;
       place-items: center;
       box-shadow: 0 0 18px var(--glow);
       flex-shrink: 0;
     }
 
-    .logo svg { width: 24px; height: 24px; fill: #07080f; }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
     .brand-info { min-width: 0; }
 
@@ -442,7 +449,7 @@
     <header class="header">
       <div class="brand">
         <div class="logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+          <img src="logo.png" alt="Believe AI" />
         </div>
         <div class="brand-info">
           <div class="title-row">
